@@ -1,42 +1,40 @@
-"use client";
-
+// components/Sidebar.tsx
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function Sidebar() {
-  const { data: session } = useSession();
-  const user = session?.user;
+  const router = useRouter();
+
+  const links = [
+    { name: "Dashboard", href: "/dashboard" },
+    { name: "Leads", href: "/leads" },
+    { name: "Calendar", href: "/calendar" },
+    { name: "Import", href: "/import" },
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("crm_token");
+    document.cookie = "crm_token=; Max-Age=0; path=/;";
+    router.push("/login");
+  };
 
   return (
-    <aside className="w-64 h-screen bg-black text-white flex flex-col p-4 fixed">
-      <h2 className="text-2xl font-bold text-[#FFD700] mb-6">Luxury CRM</h2>
-
-      {user && (
-        <div className="mb-4 text-sm">
-          Logged in as: <span className="font-semibold">{user.name}</span><br />
-          Role: <span className="uppercase font-bold text-[#FFD700]">{user.role}</span>
-        </div>
-      )}
-
-      <nav className="space-y-3 flex-1 overflow-y-auto">
-        <Link href="/dashboard" className="hover:text-gray-300 block">📊 Dashboard</Link>
-        <Link href="/leads" className="hover:text-gray-300 block">👥 Leads</Link>
-        <Link href="/followups" className="hover:text-gray-300 block">📌 Follow-ups</Link>
-        <Link href="/calendar" className="hover:text-gray-300 block">📅 Calendar</Link>
-        <Link href="/projects" className="hover:text-gray-300 block">🏗️ Projects</Link>
-        <Link href="/inventory" className="hover:text-gray-300 block">📦 Inventory</Link>
-        <Link href="/deals" className="hover:text-gray-300 block">💼 Deals</Link>
-        <Link href="/documents" className="hover:text-gray-300 block">📁 Documents</Link>
-        <Link href="/affiliates" className="hover:text-gray-300 block">🌐 Affiliates</Link>
-        <Link href="/settings" className="hover:text-gray-300 block">⚙️ Settings</Link>
-      </nav>
-
-      <button
-        onClick={() => signOut()}
-        className="bg-[#FFD700] text-black px-4 py-2 rounded shadow hover:opacity-90 mt-4"
-      >
-        🚪 Logout
-      </button>
+    <aside className="h-screen w-64 bg-gray-900 text-white p-4 fixed left-0 top-0">
+      <h2 className="text-xl font-bold mb-6">CRM Menu</h2>
+      <ul className="space-y-2">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href} className="hover:underline">
+              {link.name}
+            </Link>
+          </li>
+        ))}
+        <li className="mt-6">
+          <button onClick={handleLogout} className="bg-red-600 px-4 py-2 rounded">
+            Logout
+          </button>
+        </li>
+      </ul>
     </aside>
   );
 }
