@@ -1,6 +1,5 @@
 // ✅ API route to check email + password
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 
