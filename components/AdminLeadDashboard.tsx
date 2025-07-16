@@ -18,9 +18,17 @@ interface Lead {
   };
 }
 
+// Extend the default user type to include role
+type CustomUser = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+};
+
 export default function AdminLeadDashboard() {
   const { data: session } = useSession();
-  const user = session?.user;
+  const user = session?.user as CustomUser;
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filtered, setFiltered] = useState<Lead[]>([]);
@@ -53,7 +61,7 @@ export default function AdminLeadDashboard() {
     }
   };
 
-  const handleSearch = (e: any) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.toLowerCase();
     setSearch(val);
     const filtered = leads.filter((lead) =>
@@ -89,7 +97,7 @@ export default function AdminLeadDashboard() {
                 <th className="p-2">City</th>
                 <th className="p-2">Area</th>
                 <th className="p-2">Agent</th>
-                {(user as any)?.role === "ADMIN" && <th className="p-2">Actions</th>}
+                {user?.role === "ADMIN" && <th className="p-2">Actions</th>}
               </tr>
             </thead>
             <tbody>
