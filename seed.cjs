@@ -1,1 +1,8 @@
-import('ts-node').then(() => import('./prisma/seed.ts'));
+await prisma.user.create({
+  data: {
+    email: "admin@example.com",
+    password: await bcrypt.hash("password123", 10),
+    role: "ADMIN",
+    name: "Admin User",
+  }
+})

@@ -15,19 +15,18 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String // hashed password
-  role      Role     @default(AGENT)
-  createdAt DateTime @default(now())
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String     // hashed password
+  name      String?
+  role      Role
 
-  leads     Lead[]     @relation("UserLeads") // ✅ Matched by name
-  followUps FollowUp[] // ✅ Follow-ups created by this user
+  leads     Lead[]     @relation("UserLeads")
+  followUps FollowUp[]
 }
 
 model Lead {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   name         String
   phone        String
   email        String?
@@ -41,12 +40,12 @@ model Lead {
   purchasePlan String?
   source       String?
   inventory    String?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
 
-  createdById String
-  createdBy   User   @relation("UserLeads", fields: [createdById], references: [id]) // ✅ Now relation name matches User.leads
+  createdById  String
+  createdBy    User       @relation("UserLeads", fields: [createdById], references: [id])
 
-  followUps FollowUp[] // ✅ Related follow-ups
+  followUps    FollowUp[]
 }
 
 model FollowUp {
@@ -55,11 +54,9 @@ model FollowUp {
   note      String?
   createdAt DateTime @default(now())
 
-  leadId String
-  lead   Lead   @relation(fields: [leadId], references: [id])
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
 
-  leadName String
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id]) // ✅ Fix added for user relation
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }

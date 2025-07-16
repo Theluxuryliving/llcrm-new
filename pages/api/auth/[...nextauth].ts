@@ -1,11 +1,9 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"; // assumes prisma is handled centrally
 
-const prisma = new PrismaClient();
-
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -13,7 +11,7 @@ export const authOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: any) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
@@ -22,11 +20,7 @@ export const authOptions = {
 
         if (!user || !user.password) return null;
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
+        const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
 
         return {
@@ -42,14 +36,14 @@ export const authOptions = {
     signIn: "/login",
   },
   callbacks: {
-    async session({ session, token }: any) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.role = token.role;
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -57,7 +51,7 @@ export const authOptions = {
       return token;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || "luxurycrm-secret",
+  secret: process.env.NEXTAUTH_SECRET ?? (() => { throw new Error("NEXTAUTH_SECRET is not defined"); })(),
 };
 
 const handler = NextAuth(authOptions);
