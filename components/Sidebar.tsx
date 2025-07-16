@@ -1,40 +1,47 @@
-// components/Sidebar.tsx
 import Link from "next/link";
-import { useRouter } from "next/router";
 
-export default function Sidebar() {
-  const router = useRouter();
-
-  const links = [
-    { name: "Dashboard", href: "/dashboard" },
-    { name: "Leads", href: "/leads" },
-    { name: "Calendar", href: "/calendar" },
-    { name: "Import", href: "/import" },
-  ];
-
-  const handleLogout = () => {
-    localStorage.removeItem("crm_token");
-    document.cookie = "crm_token=; Max-Age=0; path=/;";
-    router.push("/login");
+type SidebarProps = {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string | null;
   };
+};
 
+const Sidebar = ({ user }: SidebarProps) => {
   return (
-    <aside className="h-screen w-64 bg-gray-900 text-white p-4 fixed left-0 top-0">
-      <h2 className="text-xl font-bold mb-6">CRM Menu</h2>
-      <ul className="space-y-2">
-        {links.map((link) => (
-          <li key={link.href}>
-            <Link href={link.href} className="hover:underline">
-              {link.name}
-            </Link>
-          </li>
-        ))}
-        <li className="mt-6">
-          <button onClick={handleLogout} className="bg-red-600 px-4 py-2 rounded">
+    <div className="w-64 fixed h-full bg-white border-r shadow-sm">
+      <div className="p-4 font-bold text-lg border-b">Luxury CRM</div>
+
+      <div className="p-4 text-sm text-gray-600">
+        Role: {user?.role || "N/A"}
+        <form method="POST" action="/api/auth/signout">
+          <button type="submit" className="text-blue-500 underline mt-2">
             Logout
           </button>
-        </li>
-      </ul>
-    </aside>
+        </form>
+      </div>
+
+      <nav className="flex flex-col p-4 space-y-2 text-sm">
+        <Link href="/dashboard" className="hover:text-blue-600">
+          Dashboard
+        </Link>
+        <Link href="/leads" className="hover:text-blue-600">
+          Leads
+        </Link>
+        <Link href="/followups" className="hover:text-blue-600">
+          Follow Ups
+        </Link>
+        <Link href="/calendar" className="hover:text-blue-600">
+          Calendar
+        </Link>
+        <Link href="/admin/leads" className="hover:text-blue-600">
+          Admin
+        </Link>
+      </nav>
+    </div>
   );
-}
+};
+
+export default Sidebar;
