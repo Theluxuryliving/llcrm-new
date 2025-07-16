@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DIRECTOR
+  MANAGER
+  AGENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String // hashed password
+  role      Role     @default(AGENT)
+  createdAt DateTime @default(now())
+
+  leads     Lead[]     @relation("UserLeads") // ✅ Matched by name
+  followUps FollowUp[] // ✅ Follow-ups created by this user
+}
+
+model Lead {
+  id           String   @id @default(uuid())
+  name         String
+  phone        String
+  email        String?
+  city         String?
+  country      String?
+  area         String?
+  plan         String?
+  property     String?
+  project      String?
+  budget       Int?
+  purchasePlan String?
+  source       String?
+  inventory    String?
+  createdAt    DateTime @default(now())
+
+  createdById String
+  createdBy   User   @relation("UserLeads", fields: [createdById], references: [id]) // ✅ Now relation name matches User.leads
+
+  followUps FollowUp[] // ✅ Related follow-ups
+}
+
+model FollowUp {
+  id        String   @id @default(uuid())
+  type      String
+  note      String?
+  createdAt DateTime @default(now())
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id])
+
+  leadName String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id]) // ✅ Fix added for user relation
+}
