@@ -17,7 +17,7 @@ export default async function handler(
 
   const token = jwt.sign(
     { id: user.id, name: user.name, role: user.role, email: user.email },
-    process.env.JWT_SECRET,
+   process.env.JWT_SECRET as string || "fallbacksecret",
     { expiresIn: "7d" }
   );
 
