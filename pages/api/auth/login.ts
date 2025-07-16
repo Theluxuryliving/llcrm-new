@@ -1,9 +1,11 @@
 // ✅ API route to check email + password
-import { prisma } from "../../../lib/db";
-import bcrypt from "bcryptjs";
+import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 
-export default async function handler(req, res) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "POST") return res.status(405).end();
 
   const { email, password } = req.body;
