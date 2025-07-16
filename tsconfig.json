@@ -15,9 +15,9 @@
     "jsx": "preserve",
     "incremental": true,
     "types": ["node"],
-    "baseUrl": ".",                        ← ✅ Add this
+    "baseUrl": ".",               // ✅ Add this
     "paths": {
-      "@/*": ["./*"]                       ← ✅ Add this
+      "@/*": ["./*"]              // ✅ Fixes alias resolving like @/components
     },
     "plugins": [{ "name": "next" }]
   },
