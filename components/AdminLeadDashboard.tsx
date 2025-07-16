@@ -89,7 +89,7 @@ export default function AdminLeadDashboard() {
                 <th className="p-2">City</th>
                 <th className="p-2">Area</th>
                 <th className="p-2">Agent</th>
-                {user?.role === "ADMIN" && <th className="p-2">Actions</th>}
+                {(user as any)?.role === "ADMIN" && <th className="p-2">Actions</th>}
               </tr>
             </thead>
             <tbody>
