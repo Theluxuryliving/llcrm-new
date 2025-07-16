@@ -15,6 +15,10 @@
     "jsx": "preserve",
     "incremental": true,
     "types": ["node"],
+    "baseUrl": ".",                        ← ✅ Add this
+    "paths": {
+      "@/*": ["./*"]                       ← ✅ Add this
+    },
     "plugins": [{ "name": "next" }]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
