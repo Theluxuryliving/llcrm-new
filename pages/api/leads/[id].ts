@@ -1,45 +1,38 @@
+import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]";
 import { prisma } from "../../../lib/db";
+import { authOptions } from "../auth/[...nextauth]";
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
   const user = session?.user;
 
-  const { id } = req.query;
+  if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+  const leadId = req.query.id as string;
 
   if (req.method === "GET") {
-    const lead = await prisma.lead.findUnique({ where: { id: String(id) } });
-    const followUps = await prisma.followUp.findMany({
-      where: { leadId: String(id) },
-      orderBy: { createdAt: "desc" }
-    });
-    return res.json({ lead, followUps });
-  }
-
-  if (req.method === "PUT") {
-    const { stage } = req.body;
-    const updated = await prisma.lead.update({
-      where: { id: String(id) },
-      data: { stage }
-    });
-    return res.json(updated);
-  }
-
-  // 🛡️ Only Admins can delete leads
-  if (req.method === "DELETE") {
-    if (!user || user.role !== "ADMIN") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
     try {
-      await prisma.lead.delete({ where: { id: String(id) } });
-      return res.status(200).json({ message: "Lead deleted" });
-    } catch (err) {
-      console.error("Error deleting lead", err);
+      const lead = await prisma.lead.findUnique({
+        where: { id: leadId },
+      });
+      return res.status(200).json(lead);
+    } catch (error) {
+      console.error("Error fetching lead:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  if (req.method === "DELETE") {
+    try {
+      await prisma.lead.delete({ where: { id: leadId } });
+      return res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting lead:", error);
       return res.status(500).json({ error: "Failed to delete lead" });
     }
   }
 
-  res.status(405).end();
+  res.setHeader("Allow", ["GET", "DELETE"]);
+  return res.status(405).end(`Method ${req.method} Not Allowed`);
 }
