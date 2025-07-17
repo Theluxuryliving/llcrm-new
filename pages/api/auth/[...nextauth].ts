@@ -1,7 +1,29 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma"; // assumes prisma is handled centrally
+import { prisma } from "@/lib/prisma";
+
+// ✅ Type augmentation for NextAuth
+import { DefaultSession, DefaultUser } from "next-auth";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    id: string;
+    role: string;
+  }
+
+  interface JWT {
+    id: string;
+    role: string;
+  }
+}
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -51,7 +73,11 @@ export const authOptions: AuthOptions = {
       return token;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET ?? (() => { throw new Error("NEXTAUTH_SECRET is not defined"); })(),
+  secret:
+    process.env.NEXTAUTH_SECRET ??
+    (() => {
+      throw new Error("NEXTAUTH_SECRET is not defined");
+    })(),
 };
 
 const handler = NextAuth(authOptions);
