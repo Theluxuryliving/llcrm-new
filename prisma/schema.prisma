@@ -15,18 +15,18 @@ enum Role {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  password  String     // hashed password
-  name      String?
-  role      Role
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String // hashed password
+  name     String?
+  role     Role
 
   leads     Lead[]     @relation("UserLeads")
   followUps FollowUp[]
 }
 
 model Lead {
-  id           String     @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
   phone        String
   email        String?
@@ -40,23 +40,22 @@ model Lead {
   purchasePlan String?
   source       String?
   inventory    String?
-  createdAt    DateTime   @default(now())
+  createdAt    DateTime @default(now())
 
-  createdById  String
-  createdBy    User       @relation("UserLeads", fields: [createdById], references: [id])
+  createdById String
+  createdBy   User   @relation("UserLeads", fields: [createdById], references: [id])
 
-  followUps    FollowUp[]
+  followUps FollowUp[]
 }
 
 model FollowUp {
-  id        String   @id @default(uuid())
-  type      String
-  note      String?
-  createdAt DateTime @default(now())
+  id           String    @id @default(uuid())
+  note         String
+  createdAt    DateTime  @default(now())
+  nextFollowup DateTime?
+  lead         Lead      @relation(fields: [leadId], references: [id])
+  leadId       String
 
-  leadId    String
-  lead      Lead     @relation(fields: [leadId], references: [id])
-
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id]) // 👈 Add this
+  userId String // 👈 Add this too
 }
