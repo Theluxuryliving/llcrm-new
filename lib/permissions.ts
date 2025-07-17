@@ -5,8 +5,16 @@ const permissions = {
     canViewAllLeads: true,
     dashboardAccess: "all",
   },
-  DIRECTOR: { ... },
-  MANAGER: { ... },
+  DIRECTOR: {
+  canEditUsers: true,
+  canViewReports: true,
+  dashboardAccess: "all",
+},
+  MANAGER: {
+  canEditUsers: true,
+  canViewReports: true,
+  dashboardAccess: "Manager,Agent",
+},
   AGENT: {
     canEditUsers: false,
     canViewAllLeads: false,

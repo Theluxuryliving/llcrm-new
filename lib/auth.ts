@@ -26,3 +26,15 @@ export function getCurrentUser(): CRMUser | null {
     return null;
   }
 }
+
+// ✅ Used on backend — verifies JWT signature using secret
+export function verifyJwt(token: string): CRMUser | null {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET is not defined");
+
+  try {
+    return jwt.verify(token, secret) as CRMUser;
+  } catch {
+    return null;
+  }
+}
