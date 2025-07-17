@@ -1,48 +1,67 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import jwt from "jsonwebtoken";
+import type { NextApiRequest } from "next";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { validateLogin } from "@/lib/validators";
+import jwt from "jsonwebtoken";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") return res.status(405).end();
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
 
-  const parsed = validateLogin(req.body);
-  if (!parsed.valid) {
-    return res.status(400).json({ error: parsed.error });
+    // Basic manual validation
+    const email = body?.email;
+    const password = body?.password;
+
+    if (typeof email !== "string" || !email.includes("@")) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+    }
+
+    if (typeof password !== "string" || password.length < 6) {
+      return NextResponse.json(
+        { error: "Password must be at least 6 characters" },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user || !user.password) {
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+      },
+      process.env.JWT_SECRET || "insecure_dev_secret", // Replace with env secret in production
+      { expiresIn: "7d" }
+    );
+
+    return NextResponse.json(
+      {
+        message: "Login successful",
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Login error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-
-  const { email, password } = parsed.data;
-
-  const user = await prisma.user.findUnique({ where: { email } });
-
-  if (!user || !user.password) {
-    return res.status(401).json({ error: "Invalid credentials" });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(401).json({ error: "Invalid credentials" });
-  }
-
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET is not set in environment variables.");
-  }
-
-  const token = jwt.sign(
-    {
-      id: user.id,
-      name: user.name,
-      role: user.role,
-      email: user.email,
-    },
-    secret,
-    { expiresIn: "7d" }
-  );
-
-  res.status(200).json({ token });
 }
