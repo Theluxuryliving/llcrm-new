@@ -10,12 +10,12 @@ export default async function handler(
 ) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const validation = validateLogin(req.body);
-  if (!validation.valid) {
-    return res.status(400).json({ error: validation.error });
+  const parsed = validateLogin(req.body);
+  if (!parsed.valid) {
+    return res.status(400).json({ error: parsed.error });
   }
 
-  const { email, password } = validation.data;
+  const { email, password } = parsed.data;
 
   const user = await prisma.user.findUnique({ where: { email } });
 

@@ -1,3 +1,5 @@
+// lib/validators.ts
+
 export const validateLogin = (body: any) => {
   const { email, password } = body;
 
@@ -9,5 +11,5 @@ export const validateLogin = (body: any) => {
     return { valid: false, error: 'Password must be at least 6 characters' };
   }
 
-  return { valid: true };
+  return { valid: true, data: { email, password } };
 };
