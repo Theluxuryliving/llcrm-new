@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { loginSchema } from "@/lib/validators";
+import { validateLogin } from "@/lib/validators";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,12 +10,12 @@ export default async function handler(
 ) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid input format" });
+  const validation = validateLogin(req.body);
+  if (!validation.valid) {
+    return res.status(400).json({ error: validation.error });
   }
 
-  const { email, password } = parsed.data;
+  const { email, password } = validation.data;
 
   const user = await prisma.user.findUnique({ where: { email } });
 
