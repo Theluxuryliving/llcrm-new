@@ -1,25 +1,38 @@
-import { prisma } from "../../lib/db";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "@/lib/db";
 
-export default async function handler(req, res) {
-  const userId = req.headers.authorization;
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const userId = req.headers.authorization;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-  if (!user) return res.status(401).json({ error: "Unauthorized" });
-
-  let totalLeads, totalFollowUps;
-
-  if (["ADMIN", "DIRECTOR", "MANAGER"].includes(user.role)) {
-    totalLeads = await prisma.lead.count();
-    totalFollowUps = await prisma.followUp.count();
-  } else {
-    totalLeads = await prisma.lead.count({ where: { createdById: user.id } });
-    totalFollowUps = await prisma.followUp.count({
-      where: { lead: { createdById: user.id } },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+      },
     });
-  }
 
-  res.json({ totalLeads, totalFollowUps });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Dummy summary data (replace with real queries)
+    const summary = {
+      totalLeads: 123,
+      totalDeals: 45,
+      userName: user.name,
+      userRole: user.role,
+    };
+
+    return res.status(200).json({ summary });
+  } catch (error) {
+    console.error("Dashboard summary error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 }
